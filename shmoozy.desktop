@@ -5,6 +5,6 @@ Comment=Dead-simple native chat with Claude Code
 Exec=shmoozy
 Icon=shmoozy
 Terminal=false
-Categories=Utility;Chat;Development;
+Categories=Network;Chat;
 Keywords=claude;chat;ai;llm;
 StartupWMClass=com.lubabs770.Shmoozy
