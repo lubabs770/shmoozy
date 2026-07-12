@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Shmoozy
+Comment=Dead-simple native chat with Claude Code
+Exec=shmoozy
+Icon=shmoozy
+Terminal=false
+Categories=Utility;Chat;Development;
+Keywords=claude;chat;ai;llm;
+StartupWMClass=com.lubabs770.Shmoozy
