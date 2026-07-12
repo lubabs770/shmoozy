@@ -7,6 +7,7 @@ set -euo pipefail
 src="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 bindir="$HOME/.local/bin"
 appdir="$HOME/.local/share/applications"
+icondir="$HOME/.local/share/icons/hicolor/256x256/apps"
 
 # Runtime deps: GTK4 + libadwaita + PyGObject, and the claude CLI.
 missing=()
@@ -20,11 +21,14 @@ if ((${#missing[@]})); then
   exit 1
 fi
 
-mkdir -p "$bindir" "$appdir"
+mkdir -p "$bindir" "$appdir" "$icondir"
 install -m 755 "$src/shmoozy.py" "$bindir/shmoozy"
 install -m 644 "$src/shmoozy.desktop" "$appdir/shmoozy.desktop"
+install -m 644 "$src/icon/shmoozy-256.png" "$icondir/shmoozy.png"
 command -v update-desktop-database >/dev/null 2>&1 \
   && update-desktop-database "$appdir" 2>/dev/null || true
+command -v gtk-update-icon-cache >/dev/null 2>&1 \
+  && gtk-update-icon-cache -qtf "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
 
 echo "Installed. Launch 'Shmoozy' from your app launcher, or run: shmoozy"
 case ":$PATH:" in
