@@ -82,6 +82,17 @@ PERMISSION_MODE = "bypassPermissions"
 # the Shmoozy app — just chat, reply in markdown."
 CLIENT_MARKER = "client: shmoozy"
 
+# The same "you are in Shmoozy" signal as CLIENT_MARKER, but exported into
+# claude's *environment* rather than its system prompt.
+#
+# SessionStart hooks run before the system prompt is assembled, so they never see
+# --append-system-prompt and cannot detect Shmoozy from the marker alone. A hook
+# that needs to branch on the client — e.g. to load a different set of
+# instruction files — reads this variable instead.
+# Keep the value in sync with the suffix of CLIENT_MARKER.
+CLIENT_ENV_NAME = "CLAUDE_CLIENT"
+CLIENT_ENV_VALUE = "shmoozy"
+
 
 # ── markdown → Pango markup ────────────────────────────────────────────────
 # GtkLabel speaks Pango markup, not HTML/markdown. This is a small, forgiving
@@ -481,6 +492,8 @@ class ShmoozyWindow(Adw.ApplicationWindow):
             + ":/usr/local/bin:/usr/bin:/bin",
             True,
         )
+        # Let hooks (which can't see --append-system-prompt) detect the client.
+        launcher.setenv(CLIENT_ENV_NAME, CLIENT_ENV_VALUE, True)
         self.stderr_buf = ""
         try:
             proc = launcher.spawnv(args)
