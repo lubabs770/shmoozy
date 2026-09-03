@@ -19,7 +19,7 @@ to [Chatty](https://github.com/lubabs770/chatty) (the native macOS app).
 - **Copy any message** — a light-grey copy button under every bubble puts its text (markdown source for replies) on the clipboard.
 - **Light / dark / OLED** — the header button cycles all three; OLED is pure black for AMOLED screens. Remembered across launches.
 - **Tools work** — web search, file reads, bash, etc. run in a configurable working directory.
-- **Client auto-detect** — injects a `client: shmoozy` marker into Claude's system prompt, so your `CLAUDE.md` can flip Claude into "just chat" mode when you're in the app.
+- **Client auto-detect** — injects a `client: shmoozy` marker into Claude's system prompt *and* exports `CLAUDE_CLIENT=shmoozy` into its environment, so both your `CLAUDE.md` and your hooks can flip Claude into "just chat" mode when you're in the app.
 - **New-conversation button** — clears history and starts a fresh session.
 
 ## Install
@@ -49,6 +49,24 @@ Edit the constants at the top of `shmoozy.py`:
 - `WORKING_DIRECTORY` — the folder `claude` runs in (what it can see/touch). Defaults to `$HOME`.
 - `PERMISSION_MODE` — how tool-use is handled (see the warning below).
 - `CLIENT_MARKER` — the system-prompt marker for `CLAUDE.md` auto-detection.
+- `CLIENT_ENV_NAME` / `CLIENT_ENV_VALUE` — environment variable (`CLAUDE_CLIENT=shmoozy`) exported to the `claude` process, so *hooks* can detect Shmoozy. Hooks can't see `--append-system-prompt`.
+
+### Detecting Shmoozy from a hook
+
+The system-prompt marker is invisible to hooks: `SessionStart` fires before the
+system prompt is assembled, so `--append-system-prompt` hasn't been applied yet.
+Shmoozy therefore also exports `CLAUDE_CLIENT=shmoozy` into the `claude` process
+environment, which any hook can read:
+
+```sh
+#!/bin/sh
+# SessionStart hook: load chat-mode instructions only inside Shmoozy.
+[ "$CLAUDE_CLIENT" = "shmoozy" ] || exit 0
+echo "client: shmoozy — just chat, no skills/tools, reply in markdown."
+```
+
+Use the marker for instructions Claude reads, and the variable for logic a hook
+runs.
 
 Theme preference is stored in `~/.config/shmoozy/config.json`.
 
@@ -69,6 +87,7 @@ claude -p <prompt> \
   --output-format stream-json --include-partial-messages --verbose \
   --permission-mode bypassPermissions \
   --append-system-prompt "client: shmoozy" \
+  # with CLAUDE_CLIENT=shmoozy in the environment
   [--resume <session_id>]
 ```
 
